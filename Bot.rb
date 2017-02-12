@@ -3,6 +3,7 @@
 require 'kafka'
 
 require './IrcConnection'
+require './TwitchMessageCommander'
 
 class Bot
   def initialize settings
@@ -21,19 +22,38 @@ class Bot
 
   def createWriteThread
     return Thread.new do
-      @kafkaConsumer = @kafka.consumer(
+      @outgoingKafkaConsumer = @kafka.consumer(
         group_id: "outgoing-chat-consumer",
         offset_commit_interval: 5,
         offset_commit_threshold: 100
       )
 
-      @kafkaConsumer.subscribe "outgoing-messages", start_from_beginning: false
+      @outgoingKafkaConsumer.subscribe "outgoing-messages", start_from_beginning: false
 
-      @kafkaConsumer.each_message do |outgoing|
+      @outgoingKafkaConsumer.each_message do |outgoing|
         @ircConnection.send outgoing.value
       end
     end
   end
+
+  def createCommandProcessingThread
+    return Thread.new do
+      commander = TwitchMessageCommander.new
+
+      @commandKafkaConsumer = @kafka.consumer(
+        group_id: "command-chat-consumer",
+        offset_commit_interval: 5,
+        offset_commit_threshold: 100
+      )
+
+      @commandKafkaConsumer.subscribe "incoming-messages", start_from_beginning: false
+
+      @commandKafkaConsumer.each_message do |outgoing|
+        commander.call @kafkaProducer, outgoing.value
+      end
+    end
+  end
+
 
   def setupIrcConnection
     puts "#{@ircUri}, #{@ircPort}, #{@ircNickname}, #{@ircPassword}"
@@ -64,7 +84,6 @@ class Bot
     end
   end
 
-
   def run
     trap("INT") { quit }
     trap("QUIT") { quit }
@@ -72,7 +91,8 @@ class Bot
     setupIrcConnection
 
     @threads = [
-      createWriteThread
+      createWriteThread,
+      createCommandProcessingThread
     ]
 
     @threads.each {|t| t.abort_on_exception = true}
@@ -88,9 +108,13 @@ class Bot
       puts "Killing kafka producer"
       @kafkaProducer.shutdown
     end
-    unless @kafkaConsumer.nil?
-      puts "Killing kafka consumer"
+    unless @outgoingKafkaConsumer.nil?
+      puts "Killing outgoing kafka consumer"
       @kafkaConsumer.stop
+    end
+    unless @commandKafkaConsumer.nil?
+      puts "Killing command kafka consumer"
+      @commandKafkaConsumer.stop
     end
     @threads.each(&:join)
   end
