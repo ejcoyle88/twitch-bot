@@ -1,11 +1,11 @@
 #!/usr/bin/env ruby
 
 class TwitchMessageCommand
-  def match? messageType, message
+  def match? message_type, message
     return false
   end
 
-  def call producer, messageType, message
+  def call producer, message_type, message
     return nil
   end
 end
