@@ -5,6 +5,9 @@ require './TwitchMessageCommand'
 class PingMessageCommand < TwitchMessageCommand
   def match? messageType, message
     messageParts = message.strip.split(' ', 3)
+    unless messageParts[0] == 'PING'
+      puts "Not a ping"
+    end
     return messageParts[0] == 'PING'
   end
 

@@ -3,7 +3,7 @@
 :ircPort: 6667
 :ircPassword: "2zdfm53nsj2zh2xf2dowpi8ii8b3ft"
 :ircNickname: "vaeixBot"
-:channel: "#wunair"
+:channel: "#vaeix"
 :kafka_seed_brokers:
   - 'localhost:9092'
 :kafka_client_id: "vaeix-twitch-bot"

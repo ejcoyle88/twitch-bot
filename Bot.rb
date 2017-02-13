@@ -7,16 +7,16 @@ require './TwitchMessageCommander'
 
 class Bot
   def initialize settings
-    @targetChannel = settings[:channel]
-    @ircUri = settings[:ircUri]
-    @ircPort = settings[:ircPort]
-    @ircNickname = settings[:ircNickname]
-    @ircPassword = settings[:ircPassword]
+    @targetChannel = settings.channel
+    @ircUri = settings.ircUri
+    @ircPort = settings.ircPort
+    @ircNickname = settings.ircNickname
+    @ircPassword = settings.ircPassword
     @stopRunning = false
 
     @kafka = Kafka.new(
-      seed_brokers: settings[:kafka_seed_brokers],
-      client_id: settings[:kafka_client_id]
+      seed_brokers: settings.kafkaSeedBrokers,
+      client_id: settings.kafkaClientId
     )
   end
 
@@ -30,8 +30,11 @@ class Bot
 
       @outgoingKafkaConsumer.subscribe "outgoing-messages", start_from_beginning: false
 
-      @outgoingKafkaConsumer.each_message do |outgoing|
-        @ircConnection.send outgoing.value
+      @outgoingKafkaConsumer.each_message do |message|
+        if @stopRunning
+          break
+        end
+        @ircConnection.send message.value
       end
     end
   end
@@ -48,12 +51,14 @@ class Bot
 
       @commandKafkaConsumer.subscribe "incoming-messages", start_from_beginning: false
 
-      @commandKafkaConsumer.each_message do |outgoing|
-        commander.call @kafkaProducer, outgoing.value
+      @commandKafkaConsumer.each_message do |message|
+        if @stopRunning
+          break
+        end
+        commander.call @kafkaProducer, message.value
       end
     end
   end
-
 
   def setupIrcConnection
     puts "#{@ircUri}, #{@ircPort}, #{@ircNickname}, #{@ircPassword}"
@@ -79,7 +84,7 @@ class Bot
 
       unless message.nil? || message == "" 
         @kafkaProducer.produce(message, topic: "incoming-messages")
-        @kafkaProducer.deliver_messages if (messagesReceived % 10) == 0
+        @kafkaProducer.deliver_messages
       end
     end
   end
@@ -104,18 +109,12 @@ class Bot
     puts "Shutting down"
     @stopRunning = true
     @ircConnection.send "QUIT"
-    unless @kafkaProducer.nil?
-      puts "Killing kafka producer"
-      @kafkaProducer.shutdown
-    end
-    unless @outgoingKafkaConsumer.nil?
-      puts "Killing outgoing kafka consumer"
-      @kafkaConsumer.stop
-    end
-    unless @commandKafkaConsumer.nil?
-      puts "Killing command kafka consumer"
-      @commandKafkaConsumer.stop
-    end
+    puts "Killing kafka producer"
+    @kafkaProducer.shutdown unless @kafkaProducer.nil?
+    puts "Killing outgoing kafka consumer"
+    @outgoingKafkaConsumer.stop unless @outgoingKafkaConsumer.nil?
+    puts "Killing command kafka consumer"
+    @commandKafkaConsumer.stop unless @commandKafkaConsumer.nil?
     @threads.each(&:join)
   end
 end

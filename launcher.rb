@@ -1,12 +1,11 @@
 #!/usr/bin/env ruby
 
-require 'yaml'
-
 require './Bot'
+require './Settings'
 
 class Application
   def run
-    settings = YAML::load_file("config/application.yml")
+    settings = Settings.new
     bot = Bot.new settings
     bot.run
   end

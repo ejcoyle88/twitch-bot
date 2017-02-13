@@ -12,7 +12,7 @@ class TwitchMessageCommander
   end
 
   def call producer, ircMessage
-    unless producer.nil?
+    if producer.nil?
       return
     end
 
@@ -20,8 +20,14 @@ class TwitchMessageCommander
     messageParts = message.split(' ', 3)
     messageType = messageParts[1]
 
+    puts "Handling message: #{message}"
+
     @commands.each do |command|
-      command.call producer, messageType, message
+      puts "Checking match for #{command.class.name}"
+      if command.match? messageType, message
+        puts "Matched message: #{message}"
+        command.call producer, messageType, message
+      end
     end
 
     producer.deliver_messages
