@@ -3,18 +3,18 @@
 require './twitch_message_command'
 
 class PingMessageCommand < TwitchMessageCommand
-  def match? messageType, message
-    messageParts = message.strip.split(' ', 3)
-    unless messageParts[0] == 'PING'
+  def match? message_type, message
+    message_parts = message.strip.split(' ', 3)
+    unless message_parts[0] == 'PING'
       puts "Not a ping"
     end
-    return messageParts[0] == 'PING'
+    return message_parts[0] == 'PING'
   end
 
-  def call producer, messageType, message
+  def call producer, message_type, message
     puts "Sending PONG"
-    messageParts = message.strip.split(' ', 2)
-    responseMessage = messageParts[1]
-    producer.produce "PONG #{responseMessage}", topic: 'outgoing-messages'
+    message_parts = message.strip.split(' ', 2)
+    response_message = message_parts[1]
+    producer.produce "PONG #{response_message}", topic: 'outgoing-messages'
   end
 end
