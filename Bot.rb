@@ -2,8 +2,8 @@
 
 require 'kafka'
 
-require './IrcConnection'
-require './TwitchMessageCommander'
+require './irc_connection'
+require './twitch_message_commander'
 
 class Bot
   def initialize settings

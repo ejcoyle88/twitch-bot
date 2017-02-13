@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
-require './Bot'
-require './Settings'
+require './bot'
+require './settings'
 
 class Application
   def run

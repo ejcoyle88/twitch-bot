@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
-require './PingMessageCommand'
-require './TestMessageCommand'
+require './ping_message_command'
+require './test_message_command'
 
 class TwitchMessageCommander
   def initialize

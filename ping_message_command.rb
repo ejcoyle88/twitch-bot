@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-require './TwitchMessageCommand'
+require './twitch_message_command'
 
 class PingMessageCommand < TwitchMessageCommand
   def match? messageType, message
