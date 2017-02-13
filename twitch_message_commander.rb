@@ -11,12 +11,12 @@ class TwitchMessageCommander
     ]
   end
 
-  def call producer, ircMessage
+  def call producer, irc_message
     if producer.nil?
       return
     end
 
-    message = ircMessage.strip
+    message = irc_message.strip
     message_parts = message.split(' ', 3)
     message_type = message_parts[1]
 
