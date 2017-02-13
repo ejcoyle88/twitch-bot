@@ -17,16 +17,16 @@ class TwitchMessageCommander
     end
 
     message = ircMessage.strip
-    messageParts = message.split(' ', 3)
-    messageType = messageParts[1]
+    message_parts = message.split(' ', 3)
+    message_type = message_parts[1]
 
     puts "Handling message: #{message}"
 
     @commands.each do |command|
       puts "Checking match for #{command.class.name}"
-      if command.match? messageType, message
+      if command.match? message_type, message
         puts "Matched message: #{message}"
-        command.call producer, messageType, message
+        command.call producer, message_type, message
       end
     end
 
