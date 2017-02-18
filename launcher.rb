@@ -6,6 +6,7 @@ require './settings'
 class Application
   def run
     settings = Settings.new
+    puts "Starting up"
     bot = Bot.new settings
     bot.run
   end

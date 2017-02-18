@@ -2,19 +2,19 @@
 
 require './ping_message_command'
 require './test_message_command'
+require './mp_message_command'
 
 class TwitchMessageCommander
   def initialize
     @commands = [
       PingMessageCommand.new,
-      TestMessageCommand.new
+      TestMessageCommand.new,
+      MpMessageCommand.new
     ]
   end
 
   def call producer, irc_message
-    if producer.nil?
-      return
-    end
+    return if producer.nil?
 
     message = irc_message.strip
     message_parts = message.split(' ', 3)
@@ -29,7 +29,5 @@ class TwitchMessageCommander
         command.call producer, message_type, message
       end
     end
-
-    producer.deliver_messages
   end
 end
