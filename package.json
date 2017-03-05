@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "avsc": "^4.1.11",
+    "kafka-node": "^1.5.0"
+  }
+}
